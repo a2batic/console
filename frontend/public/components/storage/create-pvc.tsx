@@ -49,6 +49,7 @@ export class CreatePVCForm extends React.Component<CreatePVCFormProps, CreatePVC
     disableForm: false,
     useSelector: false,
     nameValuePairs: [['', '']],
+    message: 'Permissions to the mounted drive.',
     accessModeRadios: [
       {
         value: 'ReadWriteOnce',
@@ -83,7 +84,9 @@ export class CreatePVCForm extends React.Component<CreatePVCFormProps, CreatePVC
   handleStorageClass = storageClass => {
     //if the provisioner is unknown or no storage class selected, user should be able to set any access mode
     const modes = storageClass && storageClass.provisioner && provisionerAccessModeMapping[storageClass.provisioner] ? provisionerAccessModeMapping[storageClass.provisioner] : ['ReadWriteOnce', 'ReadWriteMany', 'ReadOnlyMany'];
-
+    //setting message to display for various modes when a storage class of a know provisioner is selected
+    const displayMessage = provisionerAccessModeMapping[storageClass.provisioner] && storageClass ? 'Access mode is set by storage class and cannot be changed.': 'Permissions to the mounted drive.';
+    this.setState({ message: displayMessage }, this.onChange);
     //setting accessMode to default with the change to Storage Class selection
     this.setState({ storageClass: _.get(storageClass, 'metadata.name'), storageClassAccessModes: modes, accessMode: 'ReadWriteOnce'}, this.onChange);
   };
@@ -206,8 +209,7 @@ export class CreatePVCForm extends React.Component<CreatePVCFormProps, CreatePVC
             return radioObj;
           })}
           <p className="help-block" id="access-mode-help">
-            // if no storage class is set, then display the other message
-            {this.state.storageClass ? 'Access mode is set by storage class and cannot be changed.': 'Permissions to the mounted drive.'}
+            {this.state.message }
           </p>
         </div>
         <label className="control-label co-required" htmlFor="request-size-input">
@@ -342,6 +344,7 @@ export type CreatePVCFormState = {
   pvcName: string;
   accessMode: string;
   requestSizeValue: string;
+  message: string;
   requestSizeUnit: string;
   disableForm: boolean;
   accessModeRadios: { value: string, title: string }[];
