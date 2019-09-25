@@ -9,9 +9,10 @@ import {
   ModalTitle,
 } from '@console/internal/components/factory';
 import { k8sPatch, K8sResourceKind } from '@console/internal/module/k8s';
+import { StorageClassDropdown } from '@console/internal/components/utils/storage-class-dropdown';
 import { OCSServiceModel } from '../../../models';
+
 import './_add-capacity-modal.scss';
-import { OCSStorageClassDropdown } from '../storage-class-dropdown';
 
 export const AddCapacityModal = withHandlePromise((props: AddCapacityModalProps) => {
   const { ocsConfig, close, cancel } = props;
@@ -56,6 +57,15 @@ export const AddCapacityModal = withHandlePromise((props: AddCapacityModalProps)
       });
   };
 
+  const scFilter = (obj: any) => {
+    const cephStorageProvisioners = [
+      'ceph.rook.io/block',
+      'cephfs.csi.ceph.com',
+      'rbd.csi.ceph.com',
+    ];
+    return cephStorageProvisioners.every((provisioner: string) => !obj.includes(provisioner));
+  };
+
   const handleRequestSizeInputChange = (capacityObj: any) => {
     setRequestSizeValue(capacityObj.value);
   };
@@ -73,8 +83,8 @@ export const AddCapacityModal = withHandlePromise((props: AddCapacityModalProps)
           <div className="form-group">
             <label className="control-label" htmlFor="request-size-input">
               Requested Capacity
+              <DashboardCardHelp>{labelTooltip}</DashboardCardHelp>
               <span className="add-capacity-modal__span">
-                <DashboardCardHelp>{labelTooltip}</DashboardCardHelp>
                 <span>
                   Provisioned Capacity:
                   {presentCount ? ` ${presentCount / 3}Ti` : ' Unavailable'}
@@ -91,14 +101,16 @@ export const AddCapacityModal = withHandlePromise((props: AddCapacityModalProps)
               required
             />
           </div>
-          <div className="toolTip_dropdown">
+          <label className="control-label">
+            Storage Class
             <DashboardCardHelp>{storageClassTooltip}</DashboardCardHelp>
-          </div>
-          <OCSStorageClassDropdown
+          </label>
+          <StorageClassDropdown
             onChange={handleStorageClass}
             name="storageClass"
             defaultClass={storageClass}
-            required
+            filter={scFilter}
+            hideClassName="add-capacity-modal__hide"
           />
         </div>
       </ModalBody>

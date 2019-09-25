@@ -8,13 +8,13 @@ import { isDefaultClass } from '../storage-class';
 
 /* Component StorageClassDropdown - creates a dropdown list of storage classes */
 
-export class StorageClassDropdownInner extends React.Component<StorageClassDropdownInnerProps, StorageClassDropdownInnerState> {
-  readonly state: StorageClassDropdownInnerState = {
+export class StorageClassDropdown_ extends React.Component<StorageClassDropdownProps, StorageClassDropdownState> {
+  readonly state: StorageClassDropdownState = {
     items: {},
     name: this.props.name,
     selectedKey: null,
     title: <LoadingInline />,
-    defaultClass: this.props.defaultClass,
+    defaultClass: null,
   };
 
   componentWillMount() {
@@ -22,7 +22,7 @@ export class StorageClassDropdownInner extends React.Component<StorageClassDropd
   }
 
   componentWillReceiveProps(nextProps) {
-    const { loaded, loadError, resources } = nextProps;
+    const { loaded, loadError, resources, filter } = nextProps;
 
     if (loadError) {
       this.setState({
@@ -44,17 +44,19 @@ export class StorageClassDropdownInner extends React.Component<StorageClassDropd
     const unorderedItems = {};
     const noStorageClass = 'No default storage class';
     _.map(resources.StorageClass.data, resource => {
-      unorderedItems[resource.metadata.name] = {
-        kindLabel: 'StorageClass',
-        name: resource.metadata.name,
-        description: _.get(resource, 'metadata.annotations.description', ''),
-        default: isDefaultClass(resource),
-        accessMode:  _.get(resource, ['metadata', 'annotations', 'storage.alpha.openshift.io/access-mode'], ''),
-        provisioner: resource.provisioner,
-        type: _.get(resource, 'parameters.type', ''),
-        zone: _.get(resource, 'parameters.zone', ''),
-        resource,
-      };
+      if (filter ? filter(resource.provisioner): 1){
+        unorderedItems[resource.metadata.name] = {
+          kindLabel: 'StorageClass',
+          name: resource.metadata.name,
+          description: _.get(resource, 'metadata.annotations.description', ''),
+          default: isDefaultClass(resource),
+          accessMode:  _.get(resource, ['metadata', 'annotations', 'storage.alpha.openshift.io/access-mode'], ''),
+          provisioner: resource.provisioner,
+          type: _.get(resource, 'parameters.type', ''),
+          zone: _.get(resource, 'parameters.zone', ''),
+          resource,
+        };
+      }
     },
     );
 
@@ -123,7 +125,7 @@ export class StorageClassDropdownInner extends React.Component<StorageClassDropd
     return <React.Fragment>
       {loaded && itemsAvailableToShow &&
         <div>
-          <label className="control-label" htmlFor={id}>
+          <label className={this.props.hideClassName ? `${this.props.hideClassName } control-label`: 'control-label'} htmlFor={id}>
             Storage Class
           </label>
           <Dropdown
@@ -148,7 +150,7 @@ export class StorageClassDropdownInner extends React.Component<StorageClassDropd
 
 export const StorageClassDropdown = props => {
   return <Firehose resources={[{ kind: 'StorageClass', prop: 'StorageClass', isList: true }]}>
-    <StorageClassDropdownInner {...props} />
+    <StorageClassDropdown_ {...props} />
   </Firehose>;
 };
 
@@ -173,7 +175,7 @@ const StorageClassDropdownNoStorageClassOption = props => {
   </div>;
 };
 
-export type StorageClassDropdownInnerState = {
+export type StorageClassDropdownState = {
   items: any;
   name: string;
   selectedKey: string;
@@ -181,7 +183,7 @@ export type StorageClassDropdownInnerState = {
   defaultClass: string;
 };
 
-export type StorageClassDropdownInnerProps = {
+export type StorageClassDropdownProps = {
   id?: string;
   loaded?: boolean;
   resources?: any;
@@ -189,5 +191,7 @@ export type StorageClassDropdownInnerProps = {
   onChange: (object) => void;
   describedBy: string;
   defaultClass: string;
+  filter?: any;
   required?: boolean;
+  hideClassName?: string;
 };
