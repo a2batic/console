@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { Dropdown } from '@console/internal/components/utils';
+import { Dropdown, humanizeBinaryBytes } from '@console/internal/components/utils';
 import {
   DashboardItemProps,
   withDashboardResources,
@@ -9,7 +9,7 @@ import DashboardCardHeader from '@console/shared/src/components/dashboard/dashbo
 import DashboardCard from '@console/shared/src/components/dashboard/dashboard-card/DashboardCard';
 import DashboardCardTitle from '@console/shared/src/components/dashboard/dashboard-card/DashboardCardTitle';
 import DashboardCardBody from '@console/shared/src/components/dashboard/dashboard-card/DashboardCardBody';
-import { ProjectModel, StorageClassModel, PodModel } from '@console/internal/models';
+import { getInstantVectorStats } from '@console/internal/components/graphs/utils';
 import { breakdownQueryMap } from '../../../../constants/queries';
 import { PROJECTS } from '../../../../constants/index';
 import { BreakdownCardBody } from '../breakdown-card/breakdown-body';
@@ -25,7 +25,7 @@ const BreakdownCard: React.FC<DashboardItemProps> = ({
   prometheusResults,
 }) => {
   const [metricType, setMetricType] = React.useState(PROJECTS);
-  const { queries } = breakdownQueryMap[metricType];
+  const { queries, model, metric } = breakdownQueryMap[metricType];
   const queryKeys = Object.keys(queries);
 
   React.useEffect(() => {
@@ -38,15 +38,17 @@ const BreakdownCard: React.FC<DashboardItemProps> = ({
     prometheusResults.getIn([queries[q], 'loadError']),
   );
   const queriesDataLoaded = results.some((q) => q);
-  const queriesLoaded = queriesDataLoaded || queriesLoadError; // test on debugger
-  const [totalUsed, top5UsedStats, cephTotal, cephUsed] = results.map((r) =>
-    _.get(r, 'data.result[0].value[1]'),
-  );
+  const queriesLoaded = queriesDataLoaded || queriesLoadError;
+
+  const totalUsed = _.get(results[0], 'data.result[0].value[1]');
+  const cephTotal = _.get(results[2], 'data.result[0].value[1]');
+  const cephUsed = _.get(results[3], 'data.result[0].value[1]');
+  const top5UsedStats = getInstantVectorStats(results[1], metric, humanizeBinaryBytes);
 
   return (
     <DashboardCard>
       <DashboardCardHeader>
-        <DashboardCardTitle> CapacityBreakdown</DashboardCardTitle>
+        <DashboardCardTitle>Capacity breakdown</DashboardCardTitle>
         <div className="ceph-capacity-breakdown-card__header">
           <HeaderPrometheusLink />
           <Dropdown
@@ -64,6 +66,7 @@ const BreakdownCard: React.FC<DashboardItemProps> = ({
           top5UsedStats={top5UsedStats}
           cephTotal={cephTotal}
           cephUsed={cephUsed}
+          model={model}
         />
       </DashboardCardBody>
     </DashboardCard>

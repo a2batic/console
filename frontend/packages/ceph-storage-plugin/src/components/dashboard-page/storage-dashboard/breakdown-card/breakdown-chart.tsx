@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-
 import {
   Chart,
   ChartAxis,
@@ -11,36 +10,56 @@ import {
   ChartLabel,
   ChartTooltip,
 } from '@patternfly/react-charts';
+import { DataPoint } from '@console/internal/components/graphs';
+import { K8sKind } from '@console/internal/module/k8s';
+import { resourcePathFromModel } from '@console/internal/components/utils';
 
-const LinkableLegend: React.FC<> = (props) => {
+const LinkableLegend = (props) => {
   const legendData = props.data;
+  const { model } = props;
 
-  return legendData.map(d => {
-    <Link to={} ><ChartLabel datum={{name: d}}/></Link>
+  return legendData.map((d) => {
+    return (
+      <p>
+        <Link to={resourcePathFromModel(model, d.name)}>
+          <ChartLabel {...props} />
+        </Link>
+        <br />
+        <span>{d.value}</span>
+      </p>
+    );
   });
 };
 
-export const BreakdownChart: React.FC<{}> = () => {
+export const BreakdownChart: React.FC<BreakdownChartProps> = ({ data, legends, model }) => {
+  const chartData = data.map((d: DataPoint, index) => (
+    <ChartBar
+      cornerRadius={{ bottom: index === 0 || index === data.length - 1 ? 3 : 0 }} // look for it
+      barWidth={20}
+      padding={10}
+      data={[d]}
+      labelComponent={<ChartTooltip constrainToVisibleArea />}
+    />
+  ));
   return (
     <Chart
-      ariaDesc="Average number of pets"
       legendPosition="bottom-left"
       legendComponent={
         <ChartLegend
           themeColor={ChartThemeColor.purple}
-          data={[{ name: 'Cats' }, { name: 'Dogs' }, { name: 'Birds' }, { name: 'Mice' }]}
-          labelComponent={<LinkableLegend />}
+          data={legends}
+          labelComponent={<LinkableLegend model={model} />}
           orientation="horizontal"
           symbolSpacer={7}
           height={30}
           gutter={10}
-          //   padding={{ top: 0, bottom: 0 }}
-          //   style={{ labels: { fontSize: 8 } }}
+          padding={{ top: 0, bottom: 0 }}
+          style={{ labels: { fontSize: 8 } }}
         />
       }
       height={100}
       padding={{
-        bottom: 30,
+        bottom: 75,
         left: 30,
         right: 30,
         top: 30,
@@ -51,34 +70,13 @@ export const BreakdownChart: React.FC<{}> = () => {
         style={{ axis: { stroke: 'none' }, ticks: { stroke: 'none' } }}
         tickFormat={() => ''}
       />
-      <ChartStack horizontal>
-        <ChartBar
-          cornerRadius={{ bottom: 3 }} // look for it
-          barWidth={20}
-          padding={10}
-          data={[{ name: 'Cats', x: '', y: 1, label: 'Cats: 1' }]}
-          labelComponent={<ChartTooltip constrainToVisibleArea />}
-        />
-        <ChartBar
-          barWidth={20}
-          padding={10}
-          data={[{ name: 'Dogs', x: '', y: 2, label: 'Dogs: 2' }]}
-          labelComponent={<ChartTooltip constrainToVisibleArea />}
-        />
-        <ChartBar
-          barWidth={20}
-          padding={10}
-          data={[{ name: 'Birds', x: '', y: 4, label: 'Birds: 4' }]}
-          labelComponent={<ChartTooltip constrainToVisibleArea />}
-        />
-        <ChartBar
-          barWidth={20}
-          padding={10}
-          cornerRadius={{ top: 3 }}
-          data={[{ name: 'Mice', x: '', y: 3, label: 'Mice: 3' }]}
-          labelComponent={<ChartTooltip constrainToVisibleArea />}
-        />
-      </ChartStack>
+      <ChartStack horizontal>{chartData}</ChartStack>
     </Chart>
   );
+};
+
+type BreakdownChartProps = {
+  data: DataPoint[];
+  legends: { name: string }[];
+  model: K8sKind;
 };
