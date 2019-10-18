@@ -1,9 +1,3 @@
-@import '~@console/shared/src/styles/skeleton-screen';
-
-$skeleton-animation: loading-skeleton 1s ease-out .15s infinite alternate;
-$skeleton-color: #eaedf1;
-
-
 .ceph-capacity-breakdown-card__stack-chart {
     margin-top: -55px;
 }
@@ -19,57 +13,4 @@ $skeleton-color: #eaedf1;
 .ceph-capacity-breakdown-card__monitoring-header-link {
     padding: 0.3rem;
     margin-right: 1rem;
-}
-
-.skeleton-stack-bar-box {
-    margin : 0.3rem var(--pf-c-card--child--PaddingRight) 1rem var(--pf-c-card--child--PaddingLeft);
-  }
-
-.skeleton-stack-available-bar-box {
-    margin : 0 var(--pf-c-card--child--PaddingRight) 0 var(--pf-c-card--child--PaddingLeft);
-  }
-
-.skeleton-stack-legend {
-    border-radius: 0.4rem;
-    height: 50px;
-    width: 16%;
-    animation: $skeleton-animation;
-    background: $skeleton-color;
-    opacity: 0;
-    &::after {
-      background-repeat: no-repeat;
-      content: "";
-      display: block;
-      width: 100%;
-      height:100%;  
-    }
-  }
-
-  .skeleton-stack-available-bar {
-    animation: $skeleton-animation;
-    background: $skeleton-color;
-    height: 25px;
-
-    border-radius: 0.4rem;
-    opacity: 0;
-    &::after {
-      background-repeat: no-repeat;
-      content: "";
-      display: block;
-    }
-}
-
-.skeleton-stack-bar {
-  animation: $skeleton-animation;
-  background: $skeleton-color;
-  height: 25px;
-  border-radius: 0.4rem;
-  opacity: 0;
-  &::after {
-    background-repeat: no-repeat;
-    content: "";
-    display: block;
-    height: 100%;
-    width: 100%;
-  }
 }
