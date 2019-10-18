@@ -9,12 +9,11 @@ import DashboardCardHeader from '@console/shared/src/components/dashboard/dashbo
 import DashboardCard from '@console/shared/src/components/dashboard/dashboard-card/DashboardCard';
 import DashboardCardTitle from '@console/shared/src/components/dashboard/dashboard-card/DashboardCardTitle';
 import DashboardCardBody from '@console/shared/src/components/dashboard/dashboard-card/DashboardCardBody';
-import { getInstantVectorStats } from '@console/internal/components/graphs/utils';
 import { breakdownQueryMap } from '../../../../constants/queries';
 import { PROJECTS } from '../../../../constants/index';
 import { BreakdownCardBody } from '../breakdown-card/breakdown-body';
 import { HeaderPrometheusLink } from '../breakdown-card/breakdown-header';
-
+import { getStackChartStats } from '../breakdown-card/utils';
 import './capacity-breakdown-card.scss';
 
 const keys = Object.keys(breakdownQueryMap);
@@ -44,8 +43,9 @@ const BreakdownCard: React.FC<DashboardItemProps> = ({
   const totalUsed = _.get(results[0], 'data.result[0].value[1]');
   const cephTotal = _.get(results[2], 'data.result[0].value[1]');
   const cephUsed = _.get(results[3], 'data.result[0].value[1]');
-  const top5UsedStats = getInstantVectorStats(results[1], metric, humanizeBinaryBytes);
   const link = [`topk(20, ${queries[queryKeys[0]]} by (${metric}))`];
+  const top5UsedStats = getStackChartStats(results[1], metric, humanizeBinaryBytesWithoutB);
+
   return (
     <DashboardCard>
       <DashboardCardHeader>
@@ -68,6 +68,7 @@ const BreakdownCard: React.FC<DashboardItemProps> = ({
           cephTotal={cephTotal}
           cephUsed={cephUsed}
           model={model}
+          formatValue={humanizeBinaryBytesWithoutB}
         />
       </DashboardCardBody>
     </DashboardCard>

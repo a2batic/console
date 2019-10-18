@@ -14,27 +14,57 @@ import { DataPoint } from '@console/internal/components/graphs';
 import { K8sKind } from '@console/internal/module/k8s';
 import { resourcePathFromModel } from '@console/internal/components/utils';
 
-const LinkableLegend = (props) => {
-  const legendData = props.data;
-  const { model } = props;
+const getBarRadius = (index: number, length: number) => {
+  if (index === 0) {
+    return { bottom: 3 };
+  }
+  if (index === length - 1) {
+    return { top: 3 };
+  }
+  return {};
+};
 
-  return legendData.map((d) => {
-    return (
-      <p>
-        <Link to={resourcePathFromModel(model, d.name)}>
-          <ChartLabel {...props} />
-        </Link>
-        <br />
-        <span>{d.value}</span>
-      </p>
-    );
-  });
+// const LinkableLegend = (props) => {
+//   const legendData = props.data;
+//   const { model } = props;
+
+//   console.log('RESOURCE LINK', resourcePathFromModel(model, d.name));
+//   console.log('PROPS', props);
+
+//   return legendData.map((d) => {
+//     return (
+//       <p>
+//         <Link to={resourcePathFromModel(model, d.name)} target="_blank">
+//           <ChartLabel datum={d.name} />
+//         </Link>
+//         <br />
+//         <span>{d.value}</span>
+//       </p>
+//     );
+//   });
+// };
+
+const LinkableLegend = (props) => {
+  const { model, datum } = props;
+
+  console.log('PROPS', props);
+
+  const d = { ...props, name: 'hi' };
+
+  return (
+    <>
+      <Link to={resourcePathFromModel(model, datum.name)} target="_blank">
+        <ChartLabel {...props} labelPlacement="parallel" />
+      </Link>
+      <ChartLabel />
+    </>
+  );
 };
 
 export const BreakdownChart: React.FC<BreakdownChartProps> = ({ data, legends, model }) => {
   const chartData = data.map((d: DataPoint, index) => (
     <ChartBar
-      cornerRadius={{ bottom: index === 0 || index === data.length - 1 ? 3 : 0 }} // look for it
+      cornerRadius={getBarRadius(index, data.length)}
       barWidth={20}
       padding={10}
       data={[d]}
@@ -46,6 +76,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ data, legends, m
       legendPosition="bottom-left"
       legendComponent={
         <ChartLegend
+          itemsPerRow={2}
           themeColor={ChartThemeColor.purple}
           data={legends}
           labelComponent={<LinkableLegend model={model} />}
@@ -54,7 +85,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ data, legends, m
           height={30}
           gutter={10}
           padding={{ top: 0, bottom: 0 }}
-          style={{ labels: { fontSize: 8 } }}
+          style={{ labels: { fontSize: 8, color: 'blue' } }}
         />
       }
       height={100}

@@ -94,6 +94,8 @@ const plugin: Plugin<ConsumedExtensions> = [
     },
   },
   // Ceph Storage Dashboard Main Cards
+
+  // @TODO: change the order after development
   {
     type: 'Dashboards/Card',
     properties: {

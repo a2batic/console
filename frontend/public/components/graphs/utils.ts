@@ -17,7 +17,7 @@ export const getInstantVectorStats: GetStats = (response, metric, humanize) => {
     const y = parseFloat(_.get(r, 'value[1]'));
     return {
       label: humanize ? humanize(y).string : null,
-      x: _.get(r, ['metric', metric], ''),
+      x: '',
       y,
       metric: r.metric,
     };
