@@ -1,3 +1,4 @@
+import { ProjectModel, PodModel, StorageClassModel } from '@console/internal/models';
 import { ONE_HR, SIX_HR, TWENTY_FOUR_HR, PODS, STORAGE_CLASSES, PROJECTS } from './index';
 
 export enum StorageDashboardQuery {
@@ -60,10 +61,12 @@ export const CAPACITY_USAGE_QUERIES = {
 };
 
 export const CAPACITY_BREAKDOWN_QUERIES = {
+  // change this
   [StorageDashboardQuery.PROJECTS_TOTAL_USED]:
-    '(sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})))',
+    '(sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass) group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})))',
+  // change this
   [StorageDashboardQuery.PROJECTS_BY_USED_TOP_5]:
-    '(sort_desc(topk(5, sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})) by (namespace))))',
+    '(sort(topk(5, sum(avg_over_time(kube_persistentvolumeclaim_resource_requests_storage_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})) by (namespace))))',
   [StorageDashboardQuery.STORAGE_CLASSES_TOTAL_USED]:
     '(sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass) group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})) by (storageclass, provisioner))',
   [StorageDashboardQuery.STORAGE_CLASSES_BY_USED_TOP_5]:
@@ -79,7 +82,7 @@ export const CAPACITY_BREAKDOWN_QUERIES = {
 
 export const breakdownQueryMap = {
   [PROJECTS]: {
-    // model: ProjectModel,
+    model: ProjectModel,
     metric: 'namespace',
     queries: {
       [StorageDashboardQuery.PROJECTS_TOTAL_USED]:
@@ -93,8 +96,8 @@ export const breakdownQueryMap = {
     },
   },
   [STORAGE_CLASSES]: {
-    // model: StorageClassModel,
-    metric: 'storage_class', // this is right or not
+    model: StorageClassModel,
+    metric: 'storageclass',
     queries: {
       [StorageDashboardQuery.STORAGE_CLASSES_BY_USED_TOP_5]:
         CAPACITY_BREAKDOWN_QUERIES[StorageDashboardQuery.STORAGE_CLASSES_BY_USED_TOP_5],
@@ -107,8 +110,8 @@ export const breakdownQueryMap = {
     },
   },
   [PODS]: {
-    // model: PodModel,
-    metric: 'pod', // this is right or not
+    model: PodModel,
+    metric: 'pod',
     queries: {
       [StorageDashboardQuery.PODS_TOTAL_USED]:
         CAPACITY_BREAKDOWN_QUERIES[StorageDashboardQuery.PODS_TOTAL_USED],
