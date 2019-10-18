@@ -13,9 +13,9 @@ export enum StorageDashboardQuery {
   PODS_BY_REQUESTED = 'PODS_BY_REQUESTED',
   PODS_BY_USED = 'PODS_BY_USED',
   PROJECTS_BY_REQUESTED = 'PROJECTS_BY_REQUESTED',
-  PROJECTS_BY_USED = 'PROJECTS_BY_USED',
+  PROJECTS_TOTAL_USED = 'PROJECTS_TOTAL_USED',
   STORAGE_CLASSES_BY_REQUESTED = 'STORAGE_CLASSES_BY_REQUESTED',
-  STORAGE_CLASSES_BY_USED = 'STORAGE_CLASSES_BY_USED',
+  STORAGE_CLASSES_TOTAL_USED = 'STORAGE_CLASSES_TOTAL_USED',
   STORAGE_CEPH_CAPACITY_REQUESTED_QUERY = 'STORAGE_CEPH_CAPACITY_REQUESTED_QUERY',
   STORAGE_CEPH_CAPACITY_USED_QUERY = 'STORAGE_CEPH_CAPACITY_USED_QUERY',
   RESILIENCY_PROGRESS = 'RESILIENCY_PROGRESS',
@@ -60,14 +60,14 @@ export const CAPACITY_USAGE_QUERIES = {
 };
 
 export const CAPACITY_BREAKDOWN_QUERIES = {
-  [StorageDashboardQuery.PROJECTS_BY_USED]:
+  [StorageDashboardQuery.PROJECTS_TOTAL_USED]:
     '(sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})))',
   [StorageDashboardQuery.PROJECTS_BY_USED_TOP_5]:
-    '(sort(topk(5, sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})) by (namespace))))',
-  [StorageDashboardQuery.STORAGE_CLASSES_BY_USED]:
+    '(sort_desc(topk(5, sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})) by (namespace))))',
+  [StorageDashboardQuery.STORAGE_CLASSES_TOTAL_USED]:
     '(sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass) group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})) by (storageclass, provisioner))',
   [StorageDashboardQuery.STORAGE_CLASSES_BY_USED_TOP_5]:
-    '(sort(topk(5, sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})) by (storageclass, provisioner))))',
+    '(sort_desc(topk(5, sum(avg_over_time(kubelet_volume_stats_used_bytes[1h]) * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)|(ceph.rook.io/block)"})) by (storageclass, provisioner))))',
   [StorageDashboardQuery.CEPH_CAPACITY_TOTAL]: 'ceph_cluster_total_bytes',
   [StorageDashboardQuery.CEPH_CAPACITY_USED]: 'ceph_cluster_total_used_bytes',
 };

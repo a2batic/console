@@ -1,13 +1,12 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { connect } from 'react-redux';
+import { Grid, GridItem } from '@patternfly/react-core';
 import { humanizeBinaryBytesWithoutB, ExternalLink } from '@console/internal/components/utils';
 import { getInstantVectorStats, GetStats } from '@console/internal/components/graphs/utils';
 import { getPrometheusExpressionBrowserURL } from '@console/internal/components/graphs/prometheus-graph';
 import { MonitoringRoutes, connectToURLs } from '@console/internal/reducers/monitoring';
 import { PrometheusResponse } from '@console/internal/components/graphs';
 import { RootState } from '@console/internal/redux';
-
 import './capacity-breakdown-card.scss';
 
 let capValues: any;
@@ -114,23 +113,3 @@ export const getGraphLegendsStats = (response: any[]) => {
   legends.pop(); // To remove 'Available' from labels
   return legends;
 };
-
-const headerPrometheusLinkStateToProps = ({ UI }: RootState, { urls }) => {
-  const liveQueries = UI.getIn(['queryBrowser', 'queries']).filter(
-    (q) => q.get('isEnabled') && q.get('query'),
-  );
-  const queryStrings = _.map(liveQueries.toJS(), 'query');
-  return {
-    url: getPrometheusExpressionBrowserURL(urls, queryStrings) || urls[MonitoringRoutes.Prometheus],
-  };
-};
-
-const HeaderPrometheusViewLink = ({ url }) => (
-  <div className="ceph-capacity-breakdown-card__monitoring-header-link">
-    <ExternalLink href={url} text="View more" />
-  </div>
-);
-
-export const HeaderPrometheusLink = connectToURLs(MonitoringRoutes.Prometheus)(
-  connect(headerPrometheusLinkStateToProps)(HeaderPrometheusViewLink),
-);
