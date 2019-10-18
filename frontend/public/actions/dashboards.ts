@@ -15,8 +15,7 @@ export enum ActionType {
   SetError = 'setError',
 }
 // adding for testing purposes until the PR is in WIP
-window.SERVER_FLAGS.prometheusBaseURL =
-  'https://prometheus-k8s-openshift-monitoring.apps.afreen-oct-171.devcluster.openshift.com';
+
 
 const REFRESH_TIMEOUT = 5000;
 

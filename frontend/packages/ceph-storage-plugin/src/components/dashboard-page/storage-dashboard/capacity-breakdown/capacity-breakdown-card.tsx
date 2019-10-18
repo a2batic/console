@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { Dropdown, humanizeBinaryBytes } from '@console/internal/components/utils';
+import { Dropdown, humanizeBinaryBytes, humanizeBinaryBytesWithoutB } from '@console/internal/components/utils';
 import {
   DashboardItemProps,
   withDashboardResources,
@@ -14,6 +14,7 @@ import { breakdownQueryMap } from '../../../../constants/queries';
 import { PROJECTS } from '../../../../constants/index';
 import { BreakdownCardBody } from '../breakdown-card/breakdown-body';
 import { HeaderPrometheusLink } from '../breakdown-card/breakdown-header';
+
 import './capacity-breakdown-card.scss';
 
 const keys = Object.keys(breakdownQueryMap);
@@ -44,13 +45,13 @@ const BreakdownCard: React.FC<DashboardItemProps> = ({
   const cephTotal = _.get(results[2], 'data.result[0].value[1]');
   const cephUsed = _.get(results[3], 'data.result[0].value[1]');
   const top5UsedStats = getInstantVectorStats(results[1], metric, humanizeBinaryBytes);
-
+  const link = [`topk(20, ${queries[queryKeys[0]]} by (${metric}))`];
   return (
     <DashboardCard>
       <DashboardCardHeader>
         <DashboardCardTitle>Capacity breakdown</DashboardCardTitle>
         <div className="ceph-capacity-breakdown-card__header">
-          <HeaderPrometheusLink />
+          <HeaderPrometheusLink link={link} />
           <Dropdown
             items={dropdownOptions}
             onChange={setMetricType}
