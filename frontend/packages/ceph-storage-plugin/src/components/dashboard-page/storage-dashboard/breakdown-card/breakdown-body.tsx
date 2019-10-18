@@ -4,8 +4,10 @@ import { PrometheusResponse } from '@console/internal/components/graphs';
 import { BreakdownChartLoading } from './breakdown-loading';
 
 export const BreakdownCardBody: React.FC<BreakdownBodyProps> = ({
-  total5TopUsed,
+  top5UsedStats,
   totalUsed,
+  cephUsed,
+  cephTotal,
   isLoading,
 }) => {
   if (isLoading) {
@@ -24,5 +26,7 @@ export const BreakdownCardBody: React.FC<BreakdownBodyProps> = ({
 type BreakdownBodyProps = {
   isLoading: boolean;
   totalUsed: PrometheusResponse;
-  total5TopUsed: PrometheusResponse;
+  top5UsedStats: PrometheusResponse;
+  cephUsed: PrometheusResponse;
+  cephTotal: PrometheusResponse;
 };

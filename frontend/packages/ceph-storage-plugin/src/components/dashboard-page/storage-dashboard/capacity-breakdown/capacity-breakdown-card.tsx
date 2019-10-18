@@ -9,36 +9,12 @@ import DashboardCardHeader from '@console/shared/src/components/dashboard/dashbo
 import DashboardCard from '@console/shared/src/components/dashboard/dashboard-card/DashboardCard';
 import DashboardCardTitle from '@console/shared/src/components/dashboard/dashboard-card/DashboardCardTitle';
 import DashboardCardBody from '@console/shared/src/components/dashboard/dashboard-card/DashboardCardBody';
-import { ProjectModel, StorageClassModel } from '@console/internal/models';
-import { CAPACITY_BREAKDOWN_QUERIES, StorageDashboardQuery } from '../../../../constants/queries';
-import { PROJECTS, STORAGE_CLASSES } from '../../../../constants/index';
+import { ProjectModel, StorageClassModel, PodModel } from '@console/internal/models';
+import { breakdownQueryMap } from '../../../../constants/queries';
+import { PROJECTS } from '../../../../constants/index';
 import { BreakdownCardBody } from '../breakdown-card/breakdown-body';
 import { HeaderPrometheusLink } from '../breakdown-card/breakdown-header';
 import './capacity-breakdown-card.scss';
-
-const breakdownQueryMap = {
-  [PROJECTS]: {
-    model: ProjectModel,
-    metric: 'namespace',
-    queries: {
-      [StorageDashboardQuery.PROJECTS_TOTAL_USED]:
-        CAPACITY_BREAKDOWN_QUERIES[StorageDashboardQuery.PROJECTS_TOTAL_USED],
-      [StorageDashboardQuery.PROJECTS_BY_USED_TOP_5]:
-        CAPACITY_BREAKDOWN_QUERIES[StorageDashboardQuery.PROJECTS_BY_USED_TOP_5],
-    },
-  },
-  [STORAGE_CLASSES]: {
-    model: StorageClassModel,
-    metric: 'storage_class', // this is right or not
-    queries: {
-      [StorageDashboardQuery.STORAGE_CLASSES_BY_USED_TOP_5]:
-        CAPACITY_BREAKDOWN_QUERIES[StorageDashboardQuery.PROJECTS_TOTAL_USED],
-      [StorageDashboardQuery.PROJECTS_TOTAL_USED]:
-        CAPACITY_BREAKDOWN_QUERIES[StorageDashboardQuery.PROJECTS_TOTAL_USED],
-    },
-  },
-  // @TODO: BY PODS
-};
 
 const keys = Object.keys(breakdownQueryMap);
 const dropdownOptions = _.zipObject(keys, keys);
@@ -49,18 +25,23 @@ const BreakdownCard: React.FC<DashboardItemProps> = ({
   prometheusResults,
 }) => {
   const [metricType, setMetricType] = React.useState(PROJECTS);
-  React.useEffect(() => {
-    const queries = Object.keys(breakdownQueryMap[metricType].queries);
-    queries.forEach((key) => watchPrometheus(CAPACITY_BREAKDOWN_QUERIES[key]));
-    return () =>
-      queries.forEach((key) => stopWatchPrometheusQuery(CAPACITY_BREAKDOWN_QUERIES[key]));
-  }, [watchPrometheus, stopWatchPrometheusQuery, metricType]);
+  const { queries } = breakdownQueryMap[metricType];
+  const queryKeys = Object.keys(queries);
 
-  const queries = Object.keys(breakdownQueryMap[metricType].queries);
-  const [totalUsed, top5UsedStats] = queries.map((q) => prometheusResults.getIn([q, 'data']));
-  // @TODO: total and avilable queries
-  const queriesLoadError = queries.some((q) => prometheusResults.getIn([q, 'loadError']));
-  const queriesLoaded = (totalUsed && top5UsedStats) || queriesLoadError;
+  React.useEffect(() => {
+    queryKeys.forEach((q) => watchPrometheus(queries[q]));
+    return () => queryKeys.forEach((key) => stopWatchPrometheusQuery(queries[key]));
+  }, [watchPrometheus, stopWatchPrometheusQuery, metricType, queryKeys, queries]);
+
+  const results = queryKeys.map((key) => prometheusResults.getIn([queries[key], 'data']));
+  const queriesLoadError = queryKeys.some((q) =>
+    prometheusResults.getIn([queries[q], 'loadError']),
+  );
+  const queriesDataLoaded = results.some((q) => q);
+  const queriesLoaded = queriesDataLoaded || queriesLoadError; // test on debugger
+  const [totalUsed, top5UsedStats, cephTotal, cephUsed] = results.map((r) =>
+    _.get(r, 'data.result[0].value[1]'),
+  );
 
   return (
     <DashboardCard>
@@ -78,9 +59,11 @@ const BreakdownCard: React.FC<DashboardItemProps> = ({
       </DashboardCardHeader>
       <DashboardCardBody>
         <BreakdownCardBody
-          isLoading={queriesLoaded}
+          isLoading={!queriesLoaded}
           totalUsed={totalUsed}
           top5UsedStats={top5UsedStats}
+          cephTotal={cephTotal}
+          cephUsed={cephUsed}
         />
       </DashboardCardBody>
     </DashboardCard>
