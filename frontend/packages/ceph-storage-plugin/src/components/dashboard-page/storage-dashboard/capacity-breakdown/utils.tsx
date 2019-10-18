@@ -11,14 +11,14 @@ import './capacity-breakdown-card.scss';
 
 let capValues: any;
 let topFiveCapacitySum = 0;
-export const getCardUsedValue = (results: any[]) => {
+export const getCardUsedValue = (cephUsed, cephTotal) => {
   const getLastStats = (response: any, getStats: GetStats): React.ReactText => {
     const stats = getStats(response);
     return stats.length > 0 ? stats[stats.length - 1].y : null;
   };
 
-  const statUsed: React.ReactText = getLastStats(results ? results[1] : 0, getInstantVectorStats);
-  const statTotal: React.ReactText = getLastStats(results ? results[0] : 0, getInstantVectorStats);
+  const statUsed: React.ReactText = getLastStats(cephUsed ? cephUsed : 0, getInstantVectorStats);
+  const statTotal: React.ReactText = getLastStats(cephTotal ? cephTotal[0] : 0, getInstantVectorStats);
 
   const totalFormatted = humanizeBinaryBytesWithoutB(statTotal || 0, 'i', 'Gi');
   const usedFormatted = humanizeBinaryBytesWithoutB(statUsed || 0, 'i', 'Gi');
@@ -31,20 +31,15 @@ export const getCardUsedValue = (results: any[]) => {
   capValues = {
     total: totalFormatted,
     used: usedFormatted,
-    available,
+    available: available,
   };
 
   return capValues;
 };
 
-export const getCardAvailableValue = (results: PrometheusResponse[]) => {
-  getCardUsedValue(results);
-  return capValues;
-};
-
-export const getGraphVectorStats = (results: PrometheusResponse[]) => {
-  const topConsumerStatsResult = _.get(results[0], 'data.result', []);
-  const allConsumerResult = _.get(results[1], 'data.result', []);
+export const getGraphVectorStats = (topFive: PrometheusResponse, totalUsed: PrometheusResponse) => {
+  const topConsumerStatsResult = _.get(topFive, 'data.result', []);
+  const allConsumerResult = _.get(totalUsed, 'data.result', []);
   let value = {};
   const values = [];
   topConsumerStatsResult.forEach((r) => {
@@ -73,7 +68,7 @@ export const getGraphVectorStats = (results: PrometheusResponse[]) => {
     y:
       allConsumerResult && allConsumerResult[0]
         ? Number(humanizeBinaryBytesWithoutB(allConsumerResult[0].value[1], 'i', 'Gi').value) -
-          topFiveCapacitySum
+        topFiveCapacitySum
         : 0,
   };
   topFiveCapacitySum = 0;
@@ -85,7 +80,7 @@ export const getGraphVectorStats = (results: PrometheusResponse[]) => {
 const legendName = (obj: any) => {
   const legendValue = `${_.truncate(obj.name ? obj.name : obj.storageclass, { length: 11 })}\n${
     obj.y
-  } Gi`;
+    } Gi`;
   return legendValue;
 };
 

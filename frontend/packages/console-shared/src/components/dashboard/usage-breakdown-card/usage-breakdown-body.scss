@@ -9,22 +9,6 @@
     float: right !important;
 }
 
-// .skeleton-activity {
-//   animation: $skeleton-animation;
-//   background: $skeleton-color;
-//   border-radius: 5px;
-//   height: 30px;
-//   opacity: 0;
-//   margin: 1rem var(--pf-c-card--child--PaddingRight) 1rem var(--pf-c-card--child--PaddingLeft);
-//   &::after {
-//     background-repeat: no-repeat;
-//     content: "";
-//     display: block;
-//     height: 100%;
-//     width: 100%;
-//   }
-// }
-
 .skeleton-activity {
   animation: $skeleton-animation;
   background: $skeleton-color;
