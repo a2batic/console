@@ -24,37 +24,15 @@ const getBarRadius = (index: number, length: number) => {
   return {};
 };
 
-// const LinkableLegend = (props) => {
-//   const legendData = props.data;
-//   const { model } = props;
-
-//   console.log('RESOURCE LINK', resourcePathFromModel(model, d.name));
-//   console.log('PROPS', props);
-
-//   return legendData.map((d) => {
-//     return (
-//       <p>
-//         <Link to={resourcePathFromModel(model, d.name)} target="_blank">
-//           <ChartLabel datum={d.name} />
-//         </Link>
-//         <br />
-//         <span>{d.value}</span>
-//       </p>
-//     );
-//   });
-// };
-
 const LinkableLegend = (props) => {
   const { model, datum } = props;
 
   console.log('PROPS', props);
 
-  const d = { ...props, name: 'hi' };
-
   return (
     <>
       <Link to={resourcePathFromModel(model, datum.name)} target="_blank">
-        <ChartLabel {...props} labelPlacement="parallel" />
+        <ChartLabel {...props} />
       </Link>
       <ChartLabel />
     </>

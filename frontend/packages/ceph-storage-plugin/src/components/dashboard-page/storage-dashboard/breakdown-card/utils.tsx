@@ -11,7 +11,7 @@ export const getStackChartStats: GetStackStats = (response, metric, humanize) =>
       // INFO: x value needs to be same for single bar stack chart
       x: '',
       y,
-      label: `${name} ${humanize(y).string}`,
+      label: `${name}\n${humanize(y).string}`,
     };
   });
 };
