@@ -25,16 +25,131 @@ let previousPods;
 let updatedClusterJSON;
 let updatedCnt;
 let updatedPods;
+let clusterHealth;
+
+const toolBox = {
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "rook-ceph-tools104",
+    "namespace": "openshift-storage",
+    "labels": {
+      "app": "rook-ceph-tools"
+    }
+  },
+  "spec": {
+    "replicas": 1,
+    "selector": {
+      "matchLabels": {
+        "app": "rook-ceph-tools"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "rook-ceph-tools"
+        }
+      },
+      "spec": {
+        "dnsPolicy": "ClusterFirstWithHostNet",
+        "containers": [
+          {
+            "name": "rook-ceph-tools",
+            "image": "rook/ceph:master",
+            "command": [
+              "/tini"
+            ],
+            "args": [
+              "-g",
+              "--",
+              "/usr/local/bin/toolbox.sh"
+            ],
+            "imagePullPolicy": "IfNotPresent",
+            "env": [
+              {
+                "name": "ROOK_ADMIN_SECRET",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "rook-ceph-mon",
+                    "key": "admin-secret"
+                  }
+                }
+              }
+            ],
+            "securityContext": {
+              "privileged": true
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/dev",
+                "name": "dev"
+              },
+              {
+                "mountPath": "/sys/bus",
+                "name": "sysbus"
+              },
+              {
+                "mountPath": "/lib/modules",
+                "name": "libmodules"
+              },
+              {
+                "name": "mon-endpoint-volume",
+                "mountPath": "/etc/rook"
+              }
+            ]
+          }
+        ],
+        "hostNetwork": true,
+        "volumes": [
+          {
+            "name": "dev",
+            "hostPath": {
+              "path": "/dev"
+            }
+          },
+          {
+            "name": "sysbus",
+            "hostPath": {
+              "path": "/sys/bus"
+            }
+          },
+          {
+            "name": "libmodules",
+            "hostPath": {
+              "path": "/lib/modules"
+            }
+          },
+          {
+            "name": "mon-endpoint-volume",
+            "configMap": {
+              "name": "rook-ceph-mon-endpoints",
+              "items": [
+                {
+                  "key": "data",
+                  "path": "mon-endpoints"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+};
 
 describe('Check add capacity functionality for ocs service', () => {
   beforeAll(async () => {
-    // check whether the cluster is present or not, and check for its ready state
-    // if not present exit and console that no cluster is present, will be send in next PR
 
     const { name } = storageCluster.items[0].metadata;
     clusterJSON = JSON.parse(
       execSync(`kubectl get -o json -n ${NAMESPACE} ${KIND} ${name}`).toString(),
     );
+    execSync(`echo '${JSON.stringify(toolBox)}' | kubectl create -f -`);
+    // kubectl exec -n openshift-storage rook-ceph-tools35-856c5bc6b4-fsmcs ceph status
+    clusterHealth = JSON.parse(
+      JSON.stringify(execSync(`kubectl exec -n ${NAMESPACE} rook-ceph-tools35-856c5bc6b4-fsmcs ceph status`).toString()),
+    );
+    console.log(clusterHealth);
     previousCnt = _.get(clusterJSON, 'spec.storageDeviceSets[0].count', undefined);
     const uid = _.get(clusterJSON, 'metadata.uid', undefined).toString();
     previousPods = JSON.parse(execSync(`kubectl get pods -n ${NAMESPACE} -o json`).toString());
@@ -51,7 +166,7 @@ describe('Check add capacity functionality for ocs service', () => {
 
     await click(kebabMenu);
     await click(addCapacityLbl);
-    await click(addCapacityBtn);
+    //await click(addCapacityBtn);
 
     updatedClusterJSON = JSON.parse(
       execSync(`kubectl get -o json -n ${NAMESPACE} ${KIND} ${name}`).toString(),
