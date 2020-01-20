@@ -1,13 +1,14 @@
-import * as _ from 'lodash-es';
 import * as React from 'react';
+import * as _ from 'lodash-es';
 import * as classNames from 'classnames';
-import { History, Location } from 'history';
-import { Route, Switch, Link, withRouter, match, matchPath } from 'react-router-dom';
 
 import { EmptyBox, StatusBox } from '.';
-import { PodsPage } from '../pod';
+import { History, Location } from 'history';
+import { Link, Route, Switch, match, matchPath, withRouter } from 'react-router-dom';
+
 import { AsyncComponent } from './async';
 import { K8sResourceKind } from '../../module/k8s';
+import { PodsPage } from '../pod';
 
 const editYamlComponent = (props) => (
   <AsyncComponent loader={() => import('../edit-yaml').then((c) => c.EditYAML)} obj={props.obj} />
@@ -34,7 +35,12 @@ class PodsComponent extends React.PureComponent<PodsComponentProps> {
     // Otherwise it might seem like you click "Create Pod" to add replicas instead
     // of scaling the owner.
     return (
-      <PodsPage showTitle={false} namespace={namespace} selector={selector} canCreate={false} />
+      <PodsPage
+        showTitle={false}
+        namespace={namespace}
+        seleccsi-cephfsplugin-provisionertor={selector}
+        canCreate={false}
+      />
     );
   }
 }

@@ -8,6 +8,7 @@ import {
   isFeatureFlag,
   isResourceListPage,
   isResourceDetailsPage,
+  isAdditionalPage,
   isPerspective,
   isYAMLTemplate,
   isRoutePage,
@@ -82,6 +83,10 @@ export class ExtensionRegistry {
 
   public getRoutePages() {
     return this.extensions.filter(isRoutePage);
+  }
+
+  public getAdditionalPage() {
+    return this.extensions.filter(isAdditionalPage);
   }
 
   public getPerspectives() {

@@ -1,6 +1,6 @@
-import { RouteProps, RouteComponentProps } from 'react-router-dom';
-import { K8sKind, K8sResourceKindReference } from '@console/internal/module/k8s';
 import { Extension, LazyLoader } from './base';
+import { K8sKind, K8sResourceKindReference } from '@console/internal/module/k8s';
+import { RouteComponentProps, RouteProps } from 'react-router-dom';
 
 namespace ExtensionProperties {
   export interface ResourcePage<T> {
@@ -9,6 +9,23 @@ namespace ExtensionProperties {
     /** Loader for the corresponding React page component. */
     loader: LazyLoader<T>;
   }
+
+  /** To add an additonal page to public components(ex: PVs, PVCs) via plugins */
+  export type AdditionalPage = ResourcePage<{
+    /** See https://reacttraining.com/react-router/web/api/match */
+    match: RouteComponentProps['match'];
+    /** The resource kind scope. */
+    kind: K8sResourceKindReference;
+    /** The namespace scope. */
+    namespace: string;
+    /** Name of the additional tab inside detailsPage  */
+    name: string;
+  }> & {
+    /** The href for the additional page */
+    href: string;
+    /** Name of the additional tab inside detailsPage  */
+    name: string;
+  };
 
   export type ResourceListPage = ResourcePage<{
     /** See https://reacttraining.com/react-router/web/api/match */
@@ -60,6 +77,10 @@ export interface RoutePage extends Extension<ExtensionProperties.RoutePage> {
   type: 'Page/Route';
 }
 
+export interface AdditionalPage extends Extension<ExtensionProperties.AdditionalPage> {
+  type: 'Page/AdditionalPage';
+}
+
 export type ResourcePage = ResourceListPage | ResourceDetailsPage;
 
 export const isResourceListPage = (e: Extension): e is ResourceListPage => {
@@ -68,6 +89,10 @@ export const isResourceListPage = (e: Extension): e is ResourceListPage => {
 
 export const isResourceDetailsPage = (e: Extension): e is ResourceDetailsPage => {
   return e.type === 'Page/Resource/Details';
+};
+
+export const isAdditionalPage = (e: Extension): e is AdditionalPage => {
+  return e.type === 'Page/AdditionalPage';
 };
 
 export const isRoutePage = (e: Extension): e is RoutePage => {

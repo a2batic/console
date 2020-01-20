@@ -1,28 +1,29 @@
-import * as _ from 'lodash-es';
-import * as classNames from 'classnames';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { Button } from '@patternfly/react-core';
+import * as _ from 'lodash-es';
+import * as classNames from 'classnames';
 
-import { KEYBOARD_SHORTCUTS, getBadgeFromType } from '@console/shared';
-import { filterList } from '../../actions/k8s';
 import { CheckBoxes, storagePrefix } from '../row-filter';
-import { ErrorPage404, ErrorBoundaryFallback } from '../error';
-import { referenceForModel } from '../../module/k8s';
-import { withFallback } from '../utils/error-boundary';
 import {
   Dropdown,
   Firehose,
+  PageHeading,
+  RequireCreatePermission,
   history,
   inject,
   kindObj,
   makeQuery,
   makeReduxID,
-  PageHeading,
-  RequireCreatePermission,
 } from '../utils';
+import { ErrorBoundaryFallback, ErrorPage404 } from '../error';
+import { KEYBOARD_SHORTCUTS, getBadgeFromType } from '@console/shared';
+
+import { Button } from '@patternfly/react-core';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { filterList } from '../../actions/k8s';
+import { referenceForModel } from '../../module/k8s';
+import { withFallback } from '../utils/error-boundary';
 
 /** @type {React.SFC<{disabled?: boolean, label: string, onChange: React.ChangeEventHandler<any>, defaultValue?: string, value?: string}}>} */
 export const TextFilter = ({ label, onChange, defaultValue, style, className, value }) => {
@@ -330,7 +331,7 @@ FireMan_.propTypes = {
   title: PropTypes.string,
 };
 
-/** @type {React.SFC<{ListComponent: React.ComponentType<any>, kind: string, helpText?: any, namespace?: string, filterLabel?: string, textFilter?: string, title?: string, showTitle?: boolean, rowFilters?: any[], selector?: any, fieldSelector?: string, canCreate?: boolean, createButtonText?: string, createProps?: any, mock?: boolean, badge?: React.ReactNode} >} */
+/** @type {React.SFC<{ListComponent: React.ComponentType<any>, kind: string, helpText?: any, namespace?: string, filterLabel?: string, textFilter?: string, title?: string, showTitle?: boolean, rowFilters?: any[], selector?: any, fieldSelector?: string, canCreate?: boolean, createButtonText?: string, createProps?: any, mock?: boolean, badge?: React.ReactNode, createHandler?: any} >} */
 export const ListPage = withFallback((props) => {
   const {
     autoFocus,

@@ -1,23 +1,27 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
-import { sortable } from '@patternfly/react-table';
 import * as classNames from 'classnames';
+import * as plugins from '../plugins';
 
-import { Status, FLAGS } from '@console/shared';
-import { connectToFlags } from '../reducers/features';
-import { Conditions } from './conditions';
-import { DetailsPage, ListPage, Table, TableRow, TableData } from './factory';
 import {
+  AsyncComponent,
   Kebab,
-  navFactory,
   ResourceKebab,
-  SectionHeading,
   ResourceLink,
   ResourceSummary,
+  SectionHeading,
   Selector,
+  navFactory,
 } from './utils';
-import { ResourceEventStream } from './events';
+import { DetailsPage, ListPage, Table, TableData, TableRow } from './factory';
+import { FLAGS, Status } from '@console/shared';
+
+import { Conditions } from './conditions';
 import { PersistentVolumeClaimModel } from '../models';
+import { ResourceEventStream } from './events';
+import { connectToFlags } from '../reducers/features';
+import { referenceForModel } from '../module/k8s';
+import { sortable } from '@patternfly/react-table';
 
 const { common, ExpandPVC } = Kebab.factory;
 const menuActions = [
@@ -231,6 +235,7 @@ export const PersistentVolumeClaimsPage = (props) => {
     />
   );
 };
+
 export const PersistentVolumeClaimsDetailsPage = (props) => (
   <DetailsPage
     {...props}
@@ -239,6 +244,26 @@ export const PersistentVolumeClaimsDetailsPage = (props) => (
       navFactory.details(Details),
       navFactory.editYaml(),
       navFactory.events(ResourceEventStream),
+      ...plugins.registry
+        .getAdditionalPage()
+        .filter(
+          (page) =>
+            referenceForModel(page.properties.model) ===
+            referenceForModel(PersistentVolumeClaimModel),
+        )
+        .map((p) => ({
+          href: p.properties.href,
+          name: p.properties.name,
+          component: () => (
+            <AsyncComponent
+              loader={p.properties.loader}
+              namespace={props.namespace}
+              name={props.name}
+              kind={props.kind}
+              match={props.match}
+            />
+          ),
+        })),
     ]}
   />
 );
