@@ -32,6 +32,7 @@ import {
   PersistentVolumeClaimModel,
   VolumeSnapshotModel,
   VolumeSnapshotClassModel,
+  StorageClassModel,
 } from '@console/internal/models';
 import { getName, getNamespace, Status, isCephProvisioner } from '@console/shared';
 import { StorageClassDropdown } from '@console/internal/components/utils/storage-class-dropdown';
@@ -39,6 +40,7 @@ import {
   dropdownUnits,
   cephRBDProvisionerSuffix,
 } from '@console/internal/components/storage/shared';
+import { fetchK8s } from '@console/internal/graphql/client';
 import { useK8sGet } from '@console/internal/components/utils/k8s-get-hook';
 
 import './restore-pvc-modal.scss';
@@ -56,6 +58,8 @@ const RestorePVCModal = withHandlePromise<RestorePVCModalProps>(
     const [requestedUnit, setRequestedUnit] = React.useState(defaultSize?.[1] ?? 'Ti');
     const [pvcSC, setPVCStorageClass] = React.useState('');
     const [validSize, setValidSize] = React.useState(true);
+    const [storageClass, setStorageClass] = React.useState<StorageClassResourceKind>();
+    const [isSCLoaded, setIsSCLoaded] = React.useState(false);
     const namespace = getNamespace(resource);
     const snapshotName = getName(resource);
 
@@ -72,10 +76,34 @@ const RestorePVCModal = withHandlePromise<RestorePVCModalProps>(
       resource?.spec?.volumeSnapshotClassName,
     );
 
-    const onlyPvcSCs = (scObj: StorageClassResourceKind) =>
-      !snapshotClassResourceLoadError
+    React.useEffect(() => {
+      fetchK8s(StorageClassModel)
+        .then((data) => {
+          const scItems = _.get(data, 'items', []) as StorageClassResourceKind[];
+          const sc = scItems.find(
+            (obj: StorageClassResourceKind) =>
+              obj?.metadata.name === pvcResource?.spec?.storageClassName,
+          );
+          setStorageClass(sc);
+          setIsSCLoaded(true);
+        })
+        .catch(() => {
+          setStorageClass(null);
+          setIsSCLoaded(true);
+        });
+    }, [pvcResource]);
+
+    const onlyPvcSCs = (scObj) => {
+      if (_.endsWith(scObj?.provisioner, cephRBDProvisionerSuffix) && storageClass) {
+        return (
+          scObj.provisioner === storageClass?.provisioner &&
+          scObj?.resource?.parameters['pool'] === storageClass?.parameters['pool']
+        );
+      }
+      return !snapshotClassResourceLoadError
         ? scObj.provisioner.includes(snapshotClassResource?.driver)
         : true;
+    };
 
     const requestedSizeInputChange = ({ value, unit }) => {
       setRequestedSize(value);
@@ -171,7 +199,7 @@ const RestorePVCModal = withHandlePromise<RestorePVCModalProps>(
               className="co-restore-pvc-modal__input"
               isRequired
             >
-              {!snapshotClassResourceLoaded ? (
+              {!snapshotClassResourceLoaded || !isSCLoaded ? (
                 <div className="skeleton-text" />
               ) : (
                 <StorageClassDropdown

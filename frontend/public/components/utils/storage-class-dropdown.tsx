@@ -1,6 +1,7 @@
 import * as _ from 'lodash-es';
 import * as React from 'react';
 import * as fuzzy from 'fuzzysearch';
+import * as classnames from 'classnames';
 
 import { Firehose, LoadingInline, Dropdown, ResourceName, ResourceIcon } from '.';
 import { isDefaultClass } from '../storage-class';
@@ -150,11 +151,11 @@ export class StorageClassDropdownInner extends React.Component<
         {loaded && itemsAvailableToShow && (
           <div>
             <label
-              className={
-                this.props.hideClassName
-                  ? `${this.props.hideClassName} control-label`
-                  : 'control-label'
-              }
+              className={classnames(
+                this.props.hideClassName,
+                { 'co-required': this.props.required },
+                'control-label',
+              )}
               htmlFor={id}
             >
               Storage Class
