@@ -18,7 +18,14 @@ export const ReviewAndCreate: React.FC<ReviewAndCreateProps> = ({
   errorMessage,
   inProgress,
 }) => {
-  const { nodes, enableEncryption, enableMinimal, storageClass } = state;
+  const {
+    nodes,
+    enableClusterWideEncryption,
+    enablePvEncryption,
+    enableMinimal,
+    storageClass,
+    kmsServiceName,
+  } = state;
   const { cpu, memory, zones } = getNodeInfo(state.nodes);
   const scName = getName(storageClass);
   const emptyRequiredField = nodes.length < MINIMUM_NODES && !scName && !memory && !cpu;
@@ -51,11 +58,16 @@ export const ReviewAndCreate: React.FC<ReviewAndCreateProps> = ({
           <p>{pluralize(zones.size, 'zone')}</p>
         </ReviewListBody>
         {/* @TODO: Update the check from Configure when adding more items */}
-        {enableEncryption && <ReviewListTitle text="Configure" />}
-        {enableEncryption && (
-          <ReviewListBody>
-            <p>Enable Encryption</p>
-          </ReviewListBody>
+        {(enableClusterWideEncryption || enablePvEncryption) && (
+          <>
+            <ReviewListTitle text="Configure" />
+            <ReviewListBody>
+              <p className="ocs-install-wizard__review-encryption">Enable Encryption</p>
+              {kmsServiceName && (
+                <p>Connected to external key management service: {kmsServiceName}</p>
+              )}
+            </ReviewListBody>
+          </>
         )}
       </dl>
       {emptyRequiredField && (

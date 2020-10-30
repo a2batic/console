@@ -224,6 +224,8 @@ const CreateSC: React.FC<CreateSCProps> = ({ match, hasNoProvSC }) => {
         if (!state.volumeSetName.trim().length) return true;
         if (state.filteredNodes.length < MINIMUM_NODES) return true;
         return !state.volumeSetName.trim().length;
+      case CreateStepsSC.CONFIGURE:
+        return !state.hasEncryptionHandled;
       case CreateStepsSC.REVIEWANDCREATE:
         return state.nodes.length < MINIMUM_NODES || !getName(state.storageClass);
       default:
@@ -235,11 +237,11 @@ const CreateSC: React.FC<CreateSCProps> = ({ match, hasNoProvSC }) => {
     const { appName, ns } = match.params;
     try {
       setInProgress(true);
-      const { storageClass, enableEncryption, nodes, enableMinimal } = state;
+      const { storageClass, enableClusterWideEncryption, nodes, enableMinimal } = state;
       const storageCluster: StorageClusterKind = getOCSRequestData(
         storageClass,
         defaultRequestSize.BAREMETAL,
-        enableEncryption,
+        enableClusterWideEncryption,
         enableMinimal,
       );
       await Promise.all(labelNodes(nodes)).then(() => k8sCreate(OCSServiceModel, storageCluster));

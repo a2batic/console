@@ -1,5 +1,5 @@
 import { HostNamesMap } from '@console/local-storage-operator-plugin/src/components/auto-detect-volume/types';
-import { diskTypeDropdownItems, diskModeDropdownItems } from '../../../../constants';
+import { diskTypeDropdownItems, diskModeDropdownItems, ClusterMode } from '../../../../constants';
 import { StorageClassResourceKind, NodeKind } from '@console/internal/module/k8s';
 
 export const initialState: State = {
@@ -42,7 +42,14 @@ export const initialState: State = {
   enableMinimal: false,
   storageClass: { provisioner: '', reclaimPolicy: '' },
   nodes: [],
-  enableEncryption: false,
+
+  // Encryption state initialization
+  enableClusterWideEncryption: false,
+  enablePvEncryption: false,
+  kmsServiceName: '',
+  hasEncryptionHandled: true,
+
+  modeType: ClusterMode.ATTACHED,
 };
 
 export type Discoveries = {
@@ -94,7 +101,14 @@ export type State = {
   enableMinimal: boolean;
   storageClass: StorageClassResourceKind;
   nodes: NodeKind[];
-  enableEncryption: boolean;
+
+  // Encryption state declare
+  enableClusterWideEncryption: boolean;
+  enablePvEncryption: boolean;
+  kmsServiceName: string;
+  hasEncryptionHandled: boolean;
+
+  modeType: string;
 };
 
 export type Action =
@@ -130,7 +144,12 @@ export type Action =
   | { type: 'setEnableMinimal'; value: boolean }
   | { type: 'setStorageClass'; value: StorageClassResourceKind }
   | { type: 'setNodes'; value: NodeKind[] }
-  | { type: 'setEnableEncryption'; value: boolean };
+
+  // Encryption state actions
+  | { type: 'setClusterWideEnableEncryption'; value: boolean }
+  | { type: 'setPvEnableEncryption'; value: boolean }
+  | { type: 'setEncryptionValid'; value: boolean }
+  | { type: 'setKmsEncryption'; value: string };
 
 export const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -196,8 +215,16 @@ export const reducer = (state: State, action: Action) => {
       return Object.assign({}, state, { storageClass: action.value });
     case 'setNodes':
       return Object.assign({}, state, { nodes: action.value });
-    case 'setEnableEncryption':
-      return Object.assign({}, state, { enableEncryption: action.value });
+
+    // Encryption state reducer
+    case 'setClusterWideEnableEncryption':
+      return Object.assign({}, state, { enableClusterWideEncryption: action.value });
+    case 'setPvEnableEncryption':
+      return Object.assign({}, state, { enablePvEncryption: action.value });
+    case 'setEncryptionValid':
+      return Object.assign({}, state, { hasEncryptionHandled: action.value });
+    case 'setKmsEncryption':
+      return Object.assign({}, state, { kmsServiceName: action.value });
     default:
       return initialState;
   }

@@ -25,11 +25,11 @@ import { initialState, reducer, InternalClusterState } from './reducer';
 import '../install-wizard/install-wizard.scss';
 
 const makeOCSRequest = (state: InternalClusterState): Promise<StorageClusterKind> => {
-  const { storageClass, capacity, enableEncryption, nodes, enableMinimal } = state;
+  const { storageClass, capacity, enableClusterWideEncryption, nodes, enableMinimal } = state;
   const storageCluster: StorageClusterKind = getOCSRequestData(
     storageClass,
     capacity,
-    enableEncryption,
+    enableClusterWideEncryption,
     enableMinimal,
   );
 
@@ -57,6 +57,7 @@ export const CreateInternalCluster: React.FC<CreateInternalClusterProps> = ({ ma
       name: 'Configure',
       id: CreateStepsSC.CONFIGURE,
       component: <Configure state={state} dispatch={dispatch} />,
+      enableNext: state.hasEncryptionHandled,
     },
     {
       name: 'Review and create',

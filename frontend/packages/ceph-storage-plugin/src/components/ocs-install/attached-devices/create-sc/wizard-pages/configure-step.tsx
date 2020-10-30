@@ -4,14 +4,9 @@ import { State, Action } from '../state';
 import { EncryptionFormGroup } from '../../../install-wizard/configure';
 
 export const Configure: React.FC<ConfigureProps> = ({ state, dispatch }) => {
-  const { enableEncryption } = state;
-
-  const toggleEncryption = (checked: boolean) =>
-    dispatch({ type: 'setEnableEncryption', value: checked });
-
   return (
     <Form>
-      <EncryptionFormGroup isChecked={enableEncryption} onChange={toggleEncryption} />
+      <EncryptionFormGroup state={state} dispatch={dispatch} />
     </Form>
   );
 };
